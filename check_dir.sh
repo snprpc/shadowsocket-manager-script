@@ -2,6 +2,7 @@
 
 root_directory="/mnt/nfs-data/ShadowSocket/NetStatus"
 ip_address="0.0.0.0"
+
 function get_ip () {
     curl ip.6655.com/ip.aspx
 }
@@ -16,27 +17,6 @@ function sh_init () {
 	#mount
 	return  0
     fi
-    
-}
-#对数组排序
-function shell_sort () {
-    sum=${netstatus[0]}
-    min=${netstatus[0]}
-    max=${netstatus[0]}
-    for (( i=1; i<${#netstatus[@]}; i++))
-    do
-	if [ ${netstatus[$i]}>=$max ]; then
-	    max=${netstatus[$i]}
-	    sum=$sum+${netstatus[$i]}
-	elif [ ${netstatus[$i]}<=$min ]; then
-	    min=${netstatus[$i]}
-	    sum=$sum+${netstatus[$i]}
-	fi
-    done
-    
-    echo $sum
-    echo $min
-    echo $max
     
 }
 function check_netstatus () {
@@ -65,7 +45,7 @@ function read_the_dir () {
     ip_address_dirs=($(ls -l  $1 | awk '/^d/ {
 	print $NF;
      }'))
-    echo "目录数量："${#ip_address_dirs[@]}
+#    echo "目录数量："${#ip_address_dirs[@]}
     
     for ip_dir in ${ip_address_dirs[*]}
     do
@@ -77,8 +57,6 @@ function read_the_dir () {
 	    check_netstatus $ip_dir $filepath & 
 	fi
     done
-    
-    #echo ${ip_address_dirs[*]}  
 }
 
 #初始化脚本环境
@@ -88,8 +66,12 @@ if [ -f /root/ip.txt ]; then
     ip_address=$( cat /root/ip.txt )
 fi
 #echo $ip_address
+while [ 1 ]
+do
+    #读取nfs服务器目录
+    if [ $? == 0 ]; then
+	read_the_dir $root_directory
+    fi
+    sleep 1    
+done
 
-#读取nfs服务器目录
-if [ $? == 0 ]; then
-    read_the_dir $root_directory
-fi
